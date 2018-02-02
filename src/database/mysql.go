@@ -1,0 +1,28 @@
+package database
+
+import (
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+	"log"
+)
+
+var SqlDB *sql.DB
+
+func init() {
+	var err error
+	SqlDB, err = sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/fas?parseTime=true")
+	//
+	defer SqlDB.Close()
+	//
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	//
+	SqlDB.SetMaxIdleConns(20)
+	SqlDB.SetMaxOpenConns(20)
+	//
+	err = SqlDB.Ping()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+}
