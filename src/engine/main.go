@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"fas/src/conf"
+
 )
-
-
-//当前版本
-const AppVersion = "v1.0"
 
 var (
 	AppEngine *gin.Engine = nil
@@ -26,11 +25,11 @@ func init() {
 }
 
 //执行入口
-func Run(){
+func Run(cfg *conf.Config){
 	//
 	AppEngine.GET("/", func(c *gin.Context) {
 		c.Header("Content-Type", "text/html;charset=utf-8")
-		c.String(http.StatusOK, "<center><h1>%v %v</h1></center>", "FAS ", AppVersion)
+		c.String(http.StatusOK, "<center><h1>%v %v</h1></center>", cfg.Title, cfg.Version)
 	})
 
 	//ping
@@ -42,5 +41,5 @@ func Run(){
 	})
 
 	//启动http服务
-	AppEngine.Run()
+	AppEngine.Run(cfg.Port)
 }

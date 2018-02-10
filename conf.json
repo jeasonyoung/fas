@@ -1,0 +1,18 @@
+{
+  "title":"水房",
+  "version":"v1.0",
+  "port":":8000",
+  "debug":true,
+  "logPath":"out.log",
+  "logLevel":"DEBUG",
+  "db":{
+    "type":"mysql",
+    "server":"127.0.0.1",
+    "port":3306,
+    "name":"fas",
+    "user":"root",
+    "pwd":"root",
+    "maxIdle":10,
+    "maxOpen":50
+  }
+}
