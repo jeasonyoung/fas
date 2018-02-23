@@ -2,6 +2,7 @@
   "title":"水房",
   "version":"v1.0",
   "port":":8000",
+  "tokenLimit":86400,
   "debug":true,
   "logPath":"out.log",
   "logLevel":"DEBUG",

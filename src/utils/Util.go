@@ -3,8 +3,10 @@ package utils
 import (
 	"os"
 	"io/ioutil"
+	"crypto/md5"
 	"strings"
 	"errors"
+	"fmt"
 )
 
 //判断文件或文件夹是否存在
@@ -42,4 +44,13 @@ func LocalPathData(fileName string) ([]byte, error) {
 	}
 	//读取文件数据
 	return ioutil.ReadFile(fileName)
+}
+
+//md5数据处理
+func MD5Sum(data string) string {
+	if len(data) == 0 {
+		return ""
+	}
+	bytes := md5.Sum([]byte(data))
+	return fmt.Sprintf("%x", bytes)
 }

@@ -6,7 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"fas/src/conf"
+	"fas/src/log"
+	"fas/src/database"
 
+	"fas/src/apis"
 )
 
 var (
@@ -26,6 +29,31 @@ func init() {
 
 //执行入口
 func Run(cfg *conf.Config){
+	log.Logger.Info("初始化连接数据库...")
+	//初始化链接数据库
+	database.InitDatabase(cfg)
+
+	//版本v1
+	v1 := AppEngine.Group("api/v1")
+	{
+		//使用报文解析中间件
+		v1.Use(ParseRequestMiddleWare())
+		{
+			//通用API接口
+			common := v1.Group("/common")
+			{
+				//初始化通用API
+				commonApi := &apis.Common{}
+				commonApi.InitConfig(cfg)//初始化配置数据
+				//用户注册
+				common.POST("/register", commonApi.Register)
+				//
+			}
+			//
+		}
+	}
+
+
 	//
 	AppEngine.GET("/", func(c *gin.Context) {
 		c.Header("Content-Type", "text/html;charset=utf-8")
