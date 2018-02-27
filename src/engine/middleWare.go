@@ -1,19 +1,13 @@
 package engine
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 
 	"go.uber.org/zap"
 
 	"fas/src/log"
 	"fas/src/models"
-)
-
-const (
-	ReqHead = "reqHead"//请求报文头
-	ReqBodyJsonString = "reqBodyJsonString"//请求报文体
+	"fas/src/common"
 )
 
 //请求报文解析中间件
@@ -36,7 +30,7 @@ func ParseRequestMiddleWare() gin.HandlerFunc {
 		//
 		log.Logger.Debug("request-json:", zap.Bool("result", ret), zap.Any("data", req))
 		//验证报文
-		if req.Verify() {
+		if !req.Verify() {
 			log.Logger.Error("校验请求报文失败")
 			//初始化响应输出报文
 			resp := &models.Response{}
@@ -47,9 +41,9 @@ func ParseRequestMiddleWare() gin.HandlerFunc {
 			return
 		}
 		//设置请求报文头
-		context.Set(ReqHead, req.Head)
+		context.Set(common.ReqHead, req.Head)
 		//设置请求报文体
-		context.Set(ReqBodyJsonString, req.BodyToJsonString())
+		context.Set(common.ReqBodyJsonString, req.BodyToJsonString())
 		//
 		context.Next()
 	}

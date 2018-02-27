@@ -1,13 +1,13 @@
-package database
+package dao
 
 import (
-	"go.uber.org/zap"
+	"errors"
 
+	"go.uber.org/zap"
 
 	"github.com/satori/go.uuid"
 
 	"fas/src/log"
-	"errors"
 )
 
 //通讯录

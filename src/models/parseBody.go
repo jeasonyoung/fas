@@ -7,5 +7,4 @@ type RequestBodyParse interface{
 
 	//解析报文体接口
 	ParseBody(context *gin.Context) (bool,error)
-
 }

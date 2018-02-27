@@ -1,15 +1,17 @@
 package models
 
 import (
+	"errors"
+
 	"encoding/json"
 
 	"github.com/gin-gonic/gin"
 
 	"go.uber.org/zap"
 
-	"fas/src/engine"
 	"fas/src/log"
-	"errors"
+
+	"fas/src/common"
 )
 
 //注册用户
@@ -22,8 +24,8 @@ type RegisterBody struct {
 
 //解析报文体
 func (body *RegisterBody) ParseBody(context *gin.Context) (bool, error){
-	dataJson := context.MustGet(engine.ReqBodyJsonString).(string)
-	log.Logger.Debug("ParseBody", zap.String(engine.ReqBodyJsonString, dataJson))
+	dataJson := context.MustGet(common.ReqBodyJsonString).(string)
+	log.Logger.Debug("ParseBody", zap.String(common.ReqBodyJsonString, dataJson))
 	if len(dataJson) == 0 {
 		return false, errors.New("json is empty")
 	}

@@ -1,11 +1,13 @@
-package database
+package dao
 
 import (
+	"errors"
+
 	"go.uber.org/zap"
 
-	"fas/src/log"
-	"errors"
 	"github.com/satori/go.uuid"
+
+	"fas/src/log"
 )
 
 //用户登录流水

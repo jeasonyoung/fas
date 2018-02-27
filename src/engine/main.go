@@ -7,7 +7,7 @@ import (
 
 	"fas/src/conf"
 	"fas/src/log"
-	"fas/src/database"
+	"fas/src/dao"
 
 	"fas/src/apis"
 )
@@ -31,7 +31,7 @@ func init() {
 func Run(cfg *conf.Config){
 	log.Logger.Info("初始化连接数据库...")
 	//初始化链接数据库
-	database.InitDatabase(cfg)
+	dao.InitDatabase(cfg)
 
 	//版本v1
 	v1 := AppEngine.Group("api/v1")
@@ -44,10 +44,11 @@ func Run(cfg *conf.Config){
 			{
 				//初始化通用API
 				commonApi := &apis.Common{}
-				commonApi.InitConfig(cfg)//初始化配置数据
+				commonApi.InitToken(cfg)//初始化令牌配置数据
 				//用户注册
 				common.POST("/register", commonApi.Register)
-				//
+				//用户登录
+				common.POST("/signin", commonApi.SignIn)
 			}
 			//
 		}

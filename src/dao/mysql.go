@@ -1,12 +1,13 @@
-package database
+package dao
 
 import (
+	"fmt"
+
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 
 	"fas/src/conf"
 	"fas/src/log"
-	"fmt"
 )
 
 //数据库操作对象

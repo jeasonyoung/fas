@@ -10,25 +10,27 @@ import (
 
 	"go.uber.org/zap"
 
+	"fas/src/common"
+
 	"fas/src/log"
 	"fas/src/models"
 
 	"fas/src/database"
 	"fas/src/utils"
-	"fas/src/conf"
+
 )
 
 //公用结构体
 type Common struct {
-	cfg *conf.Config
+	cToken common.ITokenConf
 }
 
 //初始化配置数据
-func (c *Common) InitConfig(cfg *conf.Config){
-	if cfg == nil {
+func (c *Common) InitToken(token common.ITokenConf){
+	if token == nil {
 		return
 	}
-	c.cfg = cfg
+	c.cToken = token
 }
 
 //用户注册
@@ -50,7 +52,7 @@ func (c *Common) Register(context *gin.Context) {
 		return
 	}
 	//初始化用户数据
-	user := &database.User{}
+	user := &dao.User{}
 	//检查账号
 	if !resp.CheckReqParam(context, body.Account, "账号为空", func(param string) (bool, error) {
 		//检查账号是否已存在
@@ -95,14 +97,14 @@ func (c *Common) Register(context *gin.Context) {
 			info = "保存数据失败"
 		}
 		log.Logger.Info("register-result:", zap.Int("retCode", retCode))
-		resp.InitHead(int8(retCode), info)
+		resp.InitHead(int(retCode), info)
 	}
 	resp.ResponseJson(context)
 }
 
 //用户登录
 func (c *Common) SignIn(context *gin.Context) {
-	log.Logger.Debug("signIn")
+	log.Logger.Debug("signIn...")
 	//初始化响应报文
 	resp := &models.Response{}
 	//初始化用户登录报文体
@@ -123,7 +125,7 @@ func (c *Common) SignIn(context *gin.Context) {
 		return
 	}
 	//初始化用户数据
-	user := &database.User{}
+	user := &dao.User{}
 	//通过账号加载用户数据
 	_, err = user.LoadByAccount(body.Account)
 	if err != nil {
@@ -146,7 +148,7 @@ func (c *Common) SignIn(context *gin.Context) {
 			return
 		}
 		//加载渠道数据
-		channel := &database.Channel{}
+		channel := &dao.Channel{}
 		_, err = channel.LoadByCode(int(reqHead.Channel))
 		if err != nil {
 			resp.InitHead(models.RespCodeChannelError, err.Error())
@@ -156,14 +158,14 @@ func (c *Common) SignIn(context *gin.Context) {
 		//生成登陆令牌
 		token := utils.MD5Sum(uuid.NewV4().String())
 		//
-		userLogin := &database.UserLogin{
+		userLogin := &dao.UserLogin{
 			UserId: user.Id,//用户ID
 			ChannelId:channel.Id,//渠道ID
 			Method:0,//登录方式(0:本地登录,1:微信,2:支付宝)
 			Token:token,//登录令牌
 			IpAddr:context.Request.RemoteAddr,//请求IP地址
 			Mac:reqHead.Mac,//设备标识
-			ExpiredTime:c.cfg.GetCurrentExpiredUnix(),//过期时间戳
+			ExpiredTime:c.cToken.GetCurrentExpiredUnix(),//过期时间戳
 			Status:1,//状态(1:有效,0:无效)
 		}
 		//令牌保存

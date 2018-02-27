@@ -1,9 +1,10 @@
-package database
+package dao
 
 import (
 	"errors"
 
 	"go.uber.org/zap"
+
 	"fas/src/log"
 )
 

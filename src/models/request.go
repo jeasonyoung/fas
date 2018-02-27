@@ -7,18 +7,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"fas/src/engine"
 	"fas/src/log"
+	"fas/src/common"
 )
 
 //请求报文头
 type ReqHead struct {
-	Version uint16 `json:"version" binding:"required"`//版本号
-	Channel uint8 `json:"channel" binding:"required"`//渠道代码
-	Mac string `json:"mac"  binding:"required"`//设备标识
-	Token string `json:"token" binding:"required"`//令牌
-	Time uint64 `json:"time" binding:"required"`//时间戳
-	Sign string `json:"sign" binding:"required"`//签名戳
+	Version uint16 `json:"version"`//版本号
+	Channel uint8 `json:"channel"`//渠道代码
+	Mac string `json:"mac"`//设备标识
+	Token string `json:"token"`//令牌
+	Time uint64 `json:"time"`//时间戳
+	Sign string `json:"sign"`//签名戳
 }
 
 //解析获取请求报文头
@@ -29,7 +29,7 @@ func (head *ReqHead) ParseRequest(context *gin.Context)(bool, error){
 		return false, errors.New("context is null")
 	}
 	//获取消息头数据
-	data := context.MustGet(engine.ReqHead).(*ReqHead)
+	data := context.MustGet(common.ReqHead).(*ReqHead)
 	if data == nil {
 		log.Logger.Debug("中间件未设置消息头数据")
 		return false, errors.New("中间件未设置消息头数据")
@@ -45,13 +45,13 @@ func (head *ReqHead) ParseRequest(context *gin.Context)(bool, error){
 
 //请求报文
 type Request struct {
-	Head *ReqHead `json:"head" binding:"required"`//请求报文头
+	Head *ReqHead `json:"head"`//请求报文头
 	Body interface{} `json:"body"`//请求报文体
 }
 
 //解析请求数据
 func (req *Request) ParseRequest(context *gin.Context)(bool, error){
-	log.Logger.Debug("parseRequest", zap.Any("context", context))
+	log.Logger.Debug("parseRequest...")
 	if context == nil {
 		log.Logger.Error("context is null")
 		return false, errors.New("context is null")
@@ -81,7 +81,14 @@ func (req *Request) BodyToJsonString() string {
 
 //校验报文
 func (req *Request) Verify() bool {
-	log.Logger.Debug("verify", zap.Any("req", req))
+	body := req.Body.(map[string]interface{})
+	log.Logger.Info("verify", zap.Any("head", req.Head), zap.Any("body", body))
+
+
+
+
+	//t := reflect.TypeOf(req.Body)
+	//log.Logger.Debug("verify-type", zap.Any("type", t))
 	///TODO:
 	return true
 }

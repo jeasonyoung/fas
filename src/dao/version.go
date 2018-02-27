@@ -1,12 +1,12 @@
-package database
+package dao
 
 import (
 	"time"
+	"errors"
 
 	"go.uber.org/zap"
 
 	"fas/src/log"
-	"errors"
 )
 
 //版本管理

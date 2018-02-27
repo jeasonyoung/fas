@@ -8,8 +8,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"fas/src/engine"
 	"fas/src/log"
+	"fas/src/common"
 )
 
 //登录报文体
@@ -20,8 +20,8 @@ type SignInBody struct {
 
 //解析登录报文体
 func (body *SignInBody) ParseBody(context *gin.Context) (bool,error){
-	dataJson := context.MustGet(engine.ReqBodyJsonString).(string)
-	log.Logger.Debug("ParseBody", zap.String(engine.ReqBodyJsonString, dataJson))
+	dataJson := context.MustGet(common.ReqBodyJsonString).(string)
+	log.Logger.Debug("parseBody", zap.String(common.ReqBodyJsonString, dataJson))
 	if len(dataJson) == 0 {
 		return false, errors.New("json is empty")
 	}

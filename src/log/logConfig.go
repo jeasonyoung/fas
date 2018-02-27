@@ -1,27 +1,27 @@
 package log
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
+	"encoding/json"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"fas/src/conf"
+	"fas/src/common"
 )
 
 var Logger *zap.Logger
 
 //初始化日志
-func InitLogger(conf *conf.Config) {
+func InitLogger(cfg common.ILogConf) {
 	//日志地址"out.log"自定义
-	lp := conf.LogPath
+	lp := cfg.GetLogPath()
 	//日志级别DEBUG,ERROR,INFO
-	lv := conf.LogLevel
+	lv := cfg.GetLogLevel()
 	//是否DEBUG
 	isDebug := true
-	if conf.Debug != true {
+	if cfg.GetDebug() != true {
 		isDebug = false
 	}
 	initLogger(lp, lv, isDebug)

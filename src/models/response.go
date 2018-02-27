@@ -1,29 +1,32 @@
 package models
 
 import (
-	"fas/src/log"
-	"go.uber.org/zap"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
+
+	"go.uber.org/zap"
+
+	"fas/src/log"
 )
 
 //响应状态码
 const (
 	RespCodeSuccess = 0//响应成功
-	RespCodeParseRequestFail = -100//解析请求报文失败
-	RespCodeVerifyRequestFail = -110//校验请求报文失败
-	RespCodeGetRequestHeadFail = -120//获取报文头失败
-	RespCodeChannelError = -130//渠道号错误
-	RespCodeParamIsEmpty = -200//请求参数为空
-	RespCodeDataValidError = -300//数据验证错误
-	RespCodeDataStoreError = -310//数据存储错误
-	RespCodeAccountNotExist = -400//账号不存在
-	RespCodePasswordError = -410//密码错误
-	RespCodeSignInFail = -420//登录失败
+	RespCodeParseRequestFail = 100//解析请求报文失败
+	RespCodeVerifyRequestFail = 110//校验请求报文失败
+	RespCodeGetRequestHeadFail = 120//获取报文头失败
+	RespCodeChannelError = 130//渠道号错误
+	RespCodeParamIsEmpty = 200//请求参数为空
+	RespCodeDataValidError = 300//数据验证错误
+	RespCodeDataStoreError = 310//数据存储错误
+	RespCodeAccountNotExist = 400//账号不存在
+	RespCodePasswordError = 410//密码错误
+	RespCodeSignInFail = 420//登录失败
 )
 
 //响应状态码文本
-var respCodeText = map[int8]string {
+var respCodeText = map[int]string {
 	RespCodeSuccess : "响应成功",
 	RespCodeParseRequestFail : "解析请求报文失败",
 	RespCodeVerifyRequestFail : "校验请求报文失败",
@@ -39,7 +42,7 @@ var respCodeText = map[int8]string {
 
 //响应头
 type RespHead struct {
-	Code int8 `json:"code"` //响应码
+	Code int `json:"code"` //响应码
 	Message string `json:"msg"`//响应消息
 }
 
@@ -50,7 +53,7 @@ type Response struct {
 }
 
 //初始化响应报文头
-func (resp *Response) InitHead(code int8, msg string){
+func (resp *Response) InitHead(code int, msg string){
 	if resp.Head == nil {
 		resp.Head = &RespHead{}
 	}
@@ -99,7 +102,7 @@ func (resp *Response) ResponseParseRequestFail(c *gin.Context, err error) {
 //输出JSON格式响应
 func (resp *Response) ResponseJson(c *gin.Context){
 	log.Logger.Debug("responseWrite")
-	if c != nil {
+	if c == nil {
 		log.Logger.Fatal("context is nil")
 		return
 	}

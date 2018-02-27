@@ -77,4 +77,18 @@ func (c *Config) GetCurrentExpiredUnix() int64 {
 	return time.Now().Add(limitSecond).Unix()
 }
 
+//获取是否Debug
+func (c *Config) GetDebug() bool {
+	return c.Debug
+}
+
+//日志文件路径
+func (c *Config) GetLogPath() string {
+	return c.LogPath
+}
+
+//日志级别
+func (c *Config) GetLogLevel() string {
+	return c.LogLevel
+}
 

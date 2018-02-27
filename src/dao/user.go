@@ -1,11 +1,11 @@
-package database
+package dao
 
 import (
 	"errors"
 
-	"github.com/satori/go.uuid"
-
 	"go.uber.org/zap"
+
+	"github.com/satori/go.uuid"
 
 	"fas/src/log"
 )
