@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 
 	"fas/src/log"
+	db "fas/src/database"
 )
 
 //版本管理
@@ -26,19 +27,19 @@ type Version struct {
 
 //加载渠道最新数据
 func (v *Version) loadByChannel(channelId string)(bool,error){
-	log.Logger.Debug("loadByChannel", zap.String("channelId", channelId))
+	log.GetLogInstance().Debug("loadByChannel", log.Data("channelId", channelId))
 	if len(channelId) <= 0 {
 		return false, errors.New("channelId is empty")
 	}
-	if SqlDb == nil {
+	if db.SqlDb == nil {
 		return false, errors.New("sqldb is null")
 	}
 	//查询数据
-	err := SqlDb.QueryRow("select id,name,version,checkCode,status,startTime,url,description,channelId from tbl_fas_sys_versions where channelId=? and status=1 and startTime > now() order by version limit 0,1", channelId).Scan(
+	err := db.SqlDb.QueryRow("select id,name,version,checkCode,status,startTime,url,description,channelId from tbl_fas_sys_versions where channelId=? and status=1 and startTime > now() order by version limit 0,1", channelId).Scan(
 		v.Id, v.Name, v.Version, v.CheckCode, v.Status, v.StartTime, v.Url, v.Description, v.ChannelId)
 	//
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return true, nil

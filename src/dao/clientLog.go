@@ -3,10 +3,10 @@ package dao
 import (
 	"errors"
 
-	"go.uber.org/zap"
 	"github.com/satori/go.uuid"
 
 	"fas/src/log"
+	db "fas/src/database"
 )
 
 //终端日志
@@ -21,15 +21,15 @@ type ClientLog struct {
 
 //检查是否存在
 func (c *ClientLog) hasById(id string)(bool, error){
-	log.Logger.Debug("hasById", zap.String("id", id))
+	log.GetLogInstance().Debug("hasById", log.Data("id", id))
 	if len(id) == 0 {
 		return false, errors.New("id is empty")
 	}
-	if SqlDb == nil {
+	if db.SqlDb == nil {
 		return false, errors.New("sqlDb is null")
 	}
 	var state bool
-	err := SqlDb.QueryRow("select count(0) > 0 from tbl_fas_client_logs where id=?", id).Scan(&state)
+	err := db.SqlDb.QueryRow("select count(0) > 0 from tbl_fas_client_logs where id=?", id).Scan(&state)
 	if err != nil {
 		return false, err
 	}
@@ -38,27 +38,27 @@ func (c *ClientLog) hasById(id string)(bool, error){
 
 //添加数据
 func (c *ClientLog) AddOrUpdate()(bool, error){
-	log.Logger.Debug("add", zap.String("mac", c.Mac), zap.String("userId",c.UserId), zap.Int8("type", c.Type), zap.String("path", c.Path))
+	log.GetLogInstance().Debug("add", log.Data("mac", c.Mac), log.Data("userId",c.UserId), log.Data("type", c.Type), log.Data("path", c.Path))
 	if len(c.Mac) == 0 || len(c.UserId) == 0 || len(c.Path) == 0 {
 		return false, errors.New("mac or userId or path is null")
 	}
-	if SqlDb == nil {
+	if db.SqlDb == nil {
 		return false, errors.New("sqlDb is null")
 	}
 	//新增
 	if len(c.Id) == 0 {
 		c.Id = uuid.NewV4().String()
-		_, err := SqlDb.Exec("insert into tbl_fas_client_logs(id,mac,userId,type,path) values(?,?,?,?,?)", c.Id, c.Mac, c.UserId, c.Type, c.Path)
+		_, err := db.SqlDb.Exec("insert into tbl_fas_client_logs(id,mac,userId,type,path) values(?,?,?,?,?)", c.Id, c.Mac, c.UserId, c.Type, c.Path)
 		if err != nil {
-			log.Logger.Fatal(err.Error())
+			log.GetLogInstance().Fatal(err.Error())
 			return false, err
 		}
 		return true,nil
 	}
 	//更新
-	_, err := SqlDb.Exec("update tbl_fas_client_logs set mac=?,userId=?,type=?,path=? where id=?", c.Mac, c.UserId, c.Type, c.Path, c.Id)
+	_, err := db.SqlDb.Exec("update tbl_fas_client_logs set mac=?,userId=?,type=?,path=? where id=?", c.Mac, c.UserId, c.Type, c.Path, c.Id)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	//

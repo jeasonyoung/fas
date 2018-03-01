@@ -4,10 +4,10 @@ import (
 	"errors"
 	"time"
 
-	"go.uber.org/zap"
 	"github.com/satori/go.uuid"
 
 	"fas/src/log"
+	db "fas/src/database"
 )
 
 //账本
@@ -44,20 +44,20 @@ type AccountItem struct {
 
 //检查数据
 func (a *Account) hasById(id string)(bool, error){
-	log.Logger.Debug("hasById", zap.String("id", id))
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	log.GetLogInstance().Debug("hasById", log.Data("id", id))
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	if len(id) == 0 {
-		log.Logger.Debug("id is empty")
+		log.GetLogInstance().Debug("id is empty")
 		return false, errors.New("id is empty")
 	}
 	//
 	var result bool
-	err := SqlDb.QueryRow("select count(0) > 0 from tbl_fas_accounts where id=?", id).Scan(&result)
+	err := db.SqlDb.QueryRow("select count(0) > 0 from tbl_fas_accounts where id=?", id).Scan(&result)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false,err
 	}
 	return result, nil
@@ -65,20 +65,20 @@ func (a *Account) hasById(id string)(bool, error){
 
 //根据账本ID
 func (a *Account) LoadById(id string)(bool, error){
-	log.Logger.Debug("LoadById", zap.String("id", id))
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	log.GetLogInstance().Debug("LoadById", log.Data("id", id))
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	if len(id) == 0 {
-		log.Logger.Fatal("id is empty")
+		log.GetLogInstance().Fatal("id is empty")
 		return false, errors.New("id is empty")
 	}
 	//
-	err := SqlDb.QueryRow("select id,code,name,abbr,type,status,createUserId from tbl_fas_accounts where id=?", id).Scan(
+	err := db.SqlDb.QueryRow("select id,code,name,abbr,type,status,createUserId from tbl_fas_accounts where id=?", id).Scan(
 		a.Id, a.Code, a.Name, a.Abbr, a.Type, a.Status, a.CreateUserId)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return true, nil
@@ -86,9 +86,9 @@ func (a *Account) LoadById(id string)(bool, error){
 
 //新增或保存数据
 func (a *Account) SaveOrUpdate()(bool, error){
-	log.Logger.Debug("saveOrUpdate")
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	log.GetLogInstance().Debug("saveOrUpdate")
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	if len(a.Id) == 0 {
@@ -96,23 +96,23 @@ func (a *Account) SaveOrUpdate()(bool, error){
 	}
 	ret, err := a.hasById(a.Id)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	if !ret {//新增
-		_, err = SqlDb.Exec("insert into tbl_fas_accounts(id,code,name,abbr,type,status,createUserId) values(?,?,?,?,?,?,?)",
+		_, err = db.SqlDb.Exec("insert into tbl_fas_accounts(id,code,name,abbr,type,status,createUserId) values(?,?,?,?,?,?,?)",
 			a.Id, a.Code, a.Name, a.Abbr, a.Type, a.Status, a.CreateUserId)
 		if err != nil {
-			log.Logger.Fatal(err.Error())
+			log.GetLogInstance().Fatal(err.Error())
 			return false, err
 		}
 		return true, nil
 	}
 	//更新
-	_, err = SqlDb.Exec("update tbl_fas_accounts set code=?,name=?,abbr=?,type=?,status=?,createUserId=? where id=?",
+	_, err = db.SqlDb.Exec("update tbl_fas_accounts set code=?,name=?,abbr=?,type=?,status=?,createUserId=? where id=?",
 		a.Code, a.Name, a.Abbr, a.Type, a.Status, a.CreateUserId, a.Id)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return true, nil
@@ -120,39 +120,39 @@ func (a *Account) SaveOrUpdate()(bool, error){
 
 //根据账本ID删除数据
 func (a *Account) RemveById(id string)(bool, error){
-	log.Logger.Debug("RemveById", zap.String("id", id))
+	log.GetLogInstance().Debug("RemveById", log.Data("id", id))
 	if len(id) == 0 {
 		return false, errors.New("id is empty")
 	}
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	//检查账本明细数据
 	var ret bool
-	err := SqlDb.QueryRow("select count(0) > 0 from tbl_fas_account_items where accountId=?", id).Scan(&ret)
+	err := db.SqlDb.QueryRow("select count(0) > 0 from tbl_fas_account_items where accountId=?", id).Scan(&ret)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	if ret {//账本明细已存在，则将账本状态设置为删除
-		rs, err := SqlDb.Exec("update tbl_fas_accounts set status=2 where id=?", id)
+		rs, err := db.SqlDb.Exec("update tbl_fas_accounts set status=2 where id=?", id)
 		if err != nil {
-			log.Logger.Fatal(err.Error())
+			log.GetLogInstance().Fatal(err.Error())
 			return false, err
 		}
 		count, _ := rs.RowsAffected()
 		return count > 0, nil
 	}
 	//删除账本关联用户表
-	_, err = SqlDb.Exec("delete from tbl_fas_account_users where accountId=?", id)
+	_, err = db.SqlDb.Exec("delete from tbl_fas_account_users where accountId=?", id)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 	}
 	//删除账本数据
-	rs, err := SqlDb.Exec("delete from tbl_fas_accounts where id=?", id)
+	rs, err := db.SqlDb.Exec("delete from tbl_fas_accounts where id=?", id)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	count, _ := rs.RowsAffected()
@@ -161,36 +161,36 @@ func (a *Account) RemveById(id string)(bool, error){
 
 //新增或更新账本关联用户
 func (au *AccountUser) SaveOrUpdate()(bool, error)  {
-	log.Logger.Debug("saveOrUpdate")
+	log.GetLogInstance().Debug("saveOrUpdate")
 	if len(au.UserId) == 0 || len(au.AccountId) == 0 {
-		log.Logger.Fatal("userId or accountId is empty")
+		log.GetLogInstance().Fatal("userId or accountId is empty")
 		return false, errors.New("userId or accountId is empty")
 	}
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	//检查是否存在
 	var exists bool
-	err := SqlDb.QueryRow("select count(0)>0 from tbl_fas_account_users where accountId=? and userId=?", au.AccountId, au.UserId).Scan(&exists)
+	err := db.SqlDb.QueryRow("select count(0)>0 from tbl_fas_account_users where accountId=? and userId=?", au.AccountId, au.UserId).Scan(&exists)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	if exists {
 		//删除已存在数据
-		_, err = SqlDb.Exec("delete from tbl_fas_account_users where accountId=? and userId=?", au.AccountId, au.UserId)
+		_, err = db.SqlDb.Exec("delete from tbl_fas_account_users where accountId=? and userId=?", au.AccountId, au.UserId)
 		if err != nil {
-			log.Logger.Fatal(err.Error())
+			log.GetLogInstance().Fatal(err.Error())
 		}
 	}
 	//新增数据
 	if len(au.Id) == 0 {
 		au.Id = uuid.NewV4().String()
 	}
-	_, err = SqlDb.Exec("insert into tbl_fas_account_users(id,accountId,userId,role) values(?,?,?,?)", au.Id, au.AccountId, au.UserId, au.Role)
+	_, err = db.SqlDb.Exec("insert into tbl_fas_account_users(id,accountId,userId,role) values(?,?,?,?)", au.Id, au.AccountId, au.UserId, au.Role)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return true, nil
@@ -198,19 +198,19 @@ func (au *AccountUser) SaveOrUpdate()(bool, error)  {
 
 //检查数据是否存在
 func (ai *AccountItem) hasById(id string)(bool, error){
-	log.Logger.Debug("hasById", zap.String("id", id))
+	log.GetLogInstance().Debug("hasById", log.Data("id", id))
 	if len(id) == 0 {
-		log.Logger.Fatal("id is empty")
+		log.GetLogInstance().Fatal("id is empty")
 		return false, errors.New("id is empty")
 	}
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	var exits bool
-	err := SqlDb.QueryRow("select count(0) > 0 from tbl_fas_account_items where id=?", id).Scan(&exits)
+	err := db.SqlDb.QueryRow("select count(0) > 0 from tbl_fas_account_items where id=?", id).Scan(&exits)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return exits, nil
@@ -218,19 +218,19 @@ func (ai *AccountItem) hasById(id string)(bool, error){
 
 //获取账本明细的最大账单序号
 func (ai *AccountItem) loadMaxCode(accountId string) uint64 {
-	log.Logger.Debug("loadMaxCode", zap.String("accountId", accountId))
+	log.GetLogInstance().Debug("loadMaxCode", log.Data("accountId", accountId))
 	if len(accountId) == 0 {
-		log.Logger.Fatal("accountId is empty")
+		log.GetLogInstance().Fatal("accountId is empty")
 		return 0
 	}
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return 0
 	}
 	var code uint64
-	err := SqlDb.QueryRow("select max(code) from tbl_fas_account_items where accountId=?", accountId).Scan(&code)
+	err := db.SqlDb.QueryRow("select max(code) from tbl_fas_account_items where accountId=?", accountId).Scan(&code)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return 0
 	}
 	return code
@@ -238,17 +238,17 @@ func (ai *AccountItem) loadMaxCode(accountId string) uint64 {
 
 //新增或更新账本明细
 func (ai *AccountItem) SaveOrUpdate() (bool, error){
-	log.Logger.Debug("saveOrUpdate")
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	log.GetLogInstance().Debug("saveOrUpdate")
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	if len(ai.AccountId) == 0 {
-		log.Logger.Fatal("accountId is empty")
+		log.GetLogInstance().Fatal("accountId is empty")
 		return false, errors.New("accountId is empty")
 	}
 	if len(ai.UserId) == 0 {
-		log.Logger.Fatal("userId is empty")
+		log.GetLogInstance().Fatal("userId is empty")
 		return false, errors.New("userId is empty")
 	}
 	add := false
@@ -269,16 +269,16 @@ func (ai *AccountItem) SaveOrUpdate() (bool, error){
 		maxCode := ai.loadMaxCode(ai.AccountId)
 		ai.Code = maxCode + 1
 		//
-		_, err = SqlDb.Exec("insert into tbl_fas_account_items(id,accountId,code,userId,title,money,time) values(?,?,?,?,?,?,?)",
+		_, err = db.SqlDb.Exec("insert into tbl_fas_account_items(id,accountId,code,userId,title,money,time) values(?,?,?,?,?,?,?)",
 			ai.Id, ai.AccountId, ai.Code, ai.UserId, ai.Title, ai.Money, ai.Time)
 	}else {
 		//更新数据
-		_, err = SqlDb.Exec("update tbl_fas_account_items set accountId=?,userId=?,title=?,money=?,time=? where id=?",
+		_, err = db.SqlDb.Exec("update tbl_fas_account_items set accountId=?,userId=?,title=?,money=?,time=? where id=?",
 			ai.AccountId, ai.UserId, ai.Title, ai.Money, ai.Time, ai.Id)
 	}
 	//结果数据处理
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return true,nil

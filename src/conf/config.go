@@ -1,19 +1,28 @@
 package conf
 
 import (
+	"sync"
 	"time"
 	"fmt"
 	"encoding/json"
 
-	"go.uber.org/zap"
-
 	"fas/src/utils"
-	"fas/src/log"
 )
 
 const(
 	tokenExpireTime = 3600//秒
 )
+
+var conf *Config
+var once sync.Once
+
+//获取配置实例
+func GetConfigInstance() *Config {
+	once.Do(func() {
+		conf = &Config{}
+	})
+	return conf
+}
 
 //配置对象
 type Config struct {
@@ -66,7 +75,6 @@ func (c *Config) getTokenLimitDuration() time.Duration {
 		limit = tokenExpireTime
 	}
 	str := fmt.Sprintf("%vs", limit)
-	log.Logger.Debug("getTokenLimitDuration", zap.Uint32("limit", limit), zap.String("tokenLimitStr", str))
 	duration, _ := time.ParseDuration(str)
 	return duration
 }

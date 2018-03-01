@@ -3,11 +3,11 @@ package dao
 import (
 	"errors"
 
-	"go.uber.org/zap"
-
 	"github.com/satori/go.uuid"
 
 	"fas/src/log"
+
+	db "fas/src/database"
 )
 
 //用户
@@ -27,18 +27,18 @@ type User struct {
 
 //ID是否存在
 func (u *User) hasById(id string) bool {
-	log.Logger.Debug("hasById", zap.String("id", id))
+	log.GetLogInstance().Debug("hasById", log.Data("id", id))
 	if len(id) == 0 {
 		return false
 	}
-	if SqlDb == nil {
-		log.Logger.Debug("sql db is null")
+	if db.SqlDb == nil {
+		log.GetLogInstance().Debug("sql db is null")
 		return false
 	}
 	var result bool
-	err := SqlDb.QueryRow("select count(0) > 0 from tbl_fas_users where id=?", id).Scan(&result)
+	err := db.SqlDb.QueryRow("select count(0) > 0 from tbl_fas_users where id=?", id).Scan(&result)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false
 	}
 	return result
@@ -46,18 +46,18 @@ func (u *User) hasById(id string) bool {
 
 //账号是否存在
 func (u *User) HasByAccount(account string) bool {
-	log.Logger.Debug("HasByAccount", zap.String("account", account))
+	log.GetLogInstance().Debug("HasByAccount", log.Data("account", account))
 	if len(account) == 0 {
 		return false
 	}
-	if SqlDb == nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb == nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false
 	}
 	var result bool
-	err := SqlDb.QueryRow("select count(0) > 0 from tbl_fas_users where account=?", account).Scan(&result)
+	err := db.SqlDb.QueryRow("select count(0) > 0 from tbl_fas_users where account=?", account).Scan(&result)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false
 	}
 	return result
@@ -65,18 +65,18 @@ func (u *User) HasByAccount(account string) bool {
 
 //手机号码是否存在
 func (u *User) HasByMobile(mobile string) bool {
-	log.Logger.Debug("HasByMobile", zap.String("mobile", mobile))
+	log.GetLogInstance().Debug("HasByMobile", log.Data("mobile", mobile))
 	if len(mobile) == 0 {
 		return false
 	}
-	if SqlDb == nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb == nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false
 	}
 	var result bool
-	err := SqlDb.QueryRow("select count(0) > 0 from tbl_fas_users where mobile=?", mobile).Scan(&result)
+	err := db.SqlDb.QueryRow("select count(0) > 0 from tbl_fas_users where mobile=?", mobile).Scan(&result)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false
 	}
 	return result
@@ -84,18 +84,18 @@ func (u *User) HasByMobile(mobile string) bool {
 
 //email是否存在
 func (u *User) HasByEmail(email string) bool {
-	log.Logger.Debug("HasByEmail", zap.String("email", email))
+	log.GetLogInstance().Debug("HasByEmail", log.Data("email", email))
 	if len(email) == 0 {
 		return false
 	}
-	if SqlDb == nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb == nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false
 	}
 	var result bool
-	err := SqlDb.QueryRow("select count(0) > 0 from tbl_fas_users where email=?", email).Scan(&result)
+	err := db.SqlDb.QueryRow("select count(0) > 0 from tbl_fas_users where email=?", email).Scan(&result)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false
 	}
 	return result
@@ -103,19 +103,19 @@ func (u *User) HasByEmail(email string) bool {
 
 //根据账号加载数据
 func (u *User) LoadByAccount(account string)(bool,error){
-	log.Logger.Debug("loadByAccount", zap.String("account", account))
+	log.GetLogInstance().Debug("loadByAccount", log.Data("account", account))
 	if len(account) == 0 {
 		return false, errors.New("account is empty")
 	}
-	if SqlDb == nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb == nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	//加载数据
-	err := SqlDb.QueryRow("select id,account,password,nickName,iconUrl,mobile,email,status from tbl_fas_users where account=?", account).Scan(
+	err := db.SqlDb.QueryRow("select id,account,password,nickName,iconUrl,mobile,email,status from tbl_fas_users where account=?", account).Scan(
 		u.Id, u.Account, u.Password, u.NickName, u.IconUrl, u.Mobile, u.Email, u.Status)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	//
@@ -124,19 +124,19 @@ func (u *User) LoadByAccount(account string)(bool,error){
 
 //根据手机号码加载数据
 func (u *User) LoadByMobile(mobile string)(bool, error){
-	log.Logger.Debug("loadByMobile", zap.String("mobile", mobile))
+	log.GetLogInstance().Debug("loadByMobile", log.Data("mobile", mobile))
 	if len(mobile) == 0 {
 		return false, errors.New("mobile is empty")
 	}
-	if SqlDb == nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb == nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	//加载数据
-	err := SqlDb.QueryRow("select id,account,password,nickName,iconUrl,mobile,email,status from tbl_fas_users where mobile=?", mobile).Scan(
+	err := db.SqlDb.QueryRow("select id,account,password,nickName,iconUrl,mobile,email,status from tbl_fas_users where mobile=?", mobile).Scan(
 		u.Id, u.Account, u.Password, u.NickName, u.IconUrl, u.Mobile, u.Email, u.Status)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	//
@@ -145,19 +145,19 @@ func (u *User) LoadByMobile(mobile string)(bool, error){
 
 //根据email加载数据
 func (u *User) LoadByEmail(email string)(bool, error){
-	log.Logger.Debug("loadByEmail", zap.String("email", email))
+	log.GetLogInstance().Debug("loadByEmail", log.Data("email", email))
 	if len(email) == 0 {
 		return false, errors.New("email is empty")
 	}
-	if SqlDb == nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb == nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	//加载数据
-	err := SqlDb.QueryRow("select id,account,password,nickName,iconUrl,mobile,email,status from tbl_fas_users where email=?", email).Scan(
+	err := db.SqlDb.QueryRow("select id,account,password,nickName,iconUrl,mobile,email,status from tbl_fas_users where email=?", email).Scan(
 		u.Id, u.Account, u.Password, u.NickName, u.IconUrl, u.Mobile, u.Email, u.Status)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	//
@@ -166,16 +166,16 @@ func (u *User) LoadByEmail(email string)(bool, error){
 
 //根据类型和令牌加载数据
 func (u *User) LoadByToken(token string,t int8)(bool, error){
-	log.Logger.Debug("loadByToken", zap.String("token", token), zap.Int8("type", t))
+	log.GetLogInstance().Debug("loadByToken", log.Data("token", token), log.Data("type", t))
 	if len(token) == 0 {
-		log.Logger.Fatal("loadByToken", zap.String("token", token))
+		log.GetLogInstance().Fatal("loadByToken", log.Data("token", token))
 		return false, nil
 	}
 	//
-	err := SqlDb.QueryRow("select id,account,password,nickName,iconUrl,mobile,email,status from tbl_fas_users where id in (select userId from tbl_fas_user_oauths where type=? and authCode=?) limit 0,1", t, token).Scan(
+	err := db.SqlDb.QueryRow("select id,account,password,nickName,iconUrl,mobile,email,status from tbl_fas_users where id in (select userId from tbl_fas_user_oauths where type=? and authCode=?) limit 0,1", t, token).Scan(
 		u.Id, u.Account, u.Password, u.NickName, u.IconUrl, u.Mobile, u.Email, u.Status)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, nil
 	}
 	return true,nil
@@ -183,9 +183,9 @@ func (u *User) LoadByToken(token string,t int8)(bool, error){
 
 //更新数据
 func (u *User) SaveOrUpdate() (bool, error){
-	log.Logger.Debug("SaveOrUpdate")
-	if SqlDb == nil {
-		log.Logger.Fatal("sql db is null")
+	log.GetLogInstance().Debug("SaveOrUpdate")
+	if db.SqlDb == nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	if len(u.Id) == 0 {
@@ -194,19 +194,19 @@ func (u *User) SaveOrUpdate() (bool, error){
 	//检查是否
 	ret := u.hasById(u.Id)
 	if !ret {//新增数据
-		_, err := SqlDb.Exec("insert into tbl_fas_users(id,account,password,nickName,iconUrl,mobile,email,status) values(?,?,?,?,?,?,?,?)",
+		_, err := db.SqlDb.Exec("insert into tbl_fas_users(id,account,password,nickName,iconUrl,mobile,email,status) values(?,?,?,?,?,?,?,?)",
 			u.Id, u.Account, u.Password, u.NickName, u.IconUrl, u.Mobile, u.Email, u.Status)
 		if err != nil {
-			log.Logger.Fatal(err.Error())
+			log.GetLogInstance().Fatal(err.Error())
 			return false, err
 		}
 		return true, nil
 	}
 	//更新数据
-	_, err := SqlDb.Exec("update tbl_fas_users set account=?,password=?,nickName=?,iconUrl=?,mobile=?,email=?,status=? where id=?",
+	_, err := db.SqlDb.Exec("update tbl_fas_users set account=?,password=?,nickName=?,iconUrl=?,mobile=?,email=?,status=? where id=?",
 		u.Account, u.Password, u.NickName, u.IconUrl, u.Mobile, u.Email, u.Status, u.Id)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return true, nil

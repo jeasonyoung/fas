@@ -25,14 +25,14 @@ type RegisterBody struct {
 //解析报文体
 func (body *RegisterBody) ParseBody(context *gin.Context) (bool, error){
 	dataJson := context.MustGet(common.ReqBodyJsonString).(string)
-	log.Logger.Debug("ParseBody", zap.String(common.ReqBodyJsonString, dataJson))
+	log.GetLogInstance().Debug("ParseBody", log.Data(common.ReqBodyJsonString, dataJson))
 	if len(dataJson) == 0 {
 		return false, errors.New("json is empty")
 	}
 	//JSON解析
 	err := json.Unmarshal([]byte(dataJson), body)
 	if err != nil {
-		log.Logger.Error(err.Error())
+		log.GetLogInstance().Error(err.Error())
 		return false, err
 	}
 	return true, nil

@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 
 	"fas/src/log"
+	db "fas/src/database"
 )
 
 //渠道
@@ -18,16 +19,16 @@ type Channel struct {
 
 //根据渠道代码加载数据
 func (c *Channel) LoadByCode(code int)(bool, error){
-	log.Logger.Debug("loadByCode", zap.Int("code", code))
-	if SqlDb == nil {
+	log.GetLogInstance().Debug("loadByCode", log.Data("code", code))
+	if db.SqlDb == nil {
 		return false, errors.New("sqldb is null")
 	}
 	//查询数据
-	err := SqlDb.QueryRow("select id,code,name,status from tbl_fas_sys_channels where code=?", code).Scan(
+	err := db.SqlDb.QueryRow("select id,code,name,status from tbl_fas_sys_channels where code=?", code).Scan(
 		c.Id, c.Code, c.Name, c.Status)
 	//
 	if err != nil {
-		log.Logger.Error(err.Error())
+		log.GetLogInstance().Error(err.Error())
 		return false, err
 	}
 	return true, nil
@@ -35,19 +36,19 @@ func (c *Channel) LoadByCode(code int)(bool, error){
 
 //更新状态
 func (c *Channel) UpdateStatus(status int)(bool, error){
-	log.Logger.Debug("updateStatus", zap.Int("status", status))
+	log.GetLogInstance().Debug("updateStatus", log.Data("status", status))
 	if status < 0 {
 		return false, errors.New("status < 0")
 	}
 	//更新数据
-	rs,err := SqlDb.Exec("update tbl_fas_sys_channels set status=? where id=?", status, c.Id)
+	rs,err := db.SqlDb.Exec("update tbl_fas_sys_channels set status=? where id=?", status, c.Id)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	_, err = rs.RowsAffected()
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return true, nil

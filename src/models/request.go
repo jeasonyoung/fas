@@ -23,15 +23,15 @@ type ReqHead struct {
 
 //解析获取请求报文头
 func (head *ReqHead) ParseRequest(context *gin.Context)(bool, error){
-	log.Logger.Debug("parseRequest")
+	log.GetLogInstance().Debug("parseRequest")
 	if context == nil {
-		log.Logger.Error("context is null")
+		log.GetLogInstance().Error("context is null")
 		return false, errors.New("context is null")
 	}
 	//获取消息头数据
 	data := context.MustGet(common.ReqHead).(*ReqHead)
 	if data == nil {
-		log.Logger.Debug("中间件未设置消息头数据")
+		log.GetLogInstance().Debug("中间件未设置消息头数据")
 		return false, errors.New("中间件未设置消息头数据")
 	}
 	//重新赋值
@@ -51,15 +51,15 @@ type Request struct {
 
 //解析请求数据
 func (req *Request) ParseRequest(context *gin.Context)(bool, error){
-	log.Logger.Debug("parseRequest...")
+	log.GetLogInstance().Debug("parseRequest...")
 	if context == nil {
-		log.Logger.Error("context is null")
+		log.GetLogInstance().Error("context is null")
 		return false, errors.New("context is null")
 	}
 	//解析报文为数据json
 	err := context.BindJSON(req)
 	if err != nil {
-		log.Logger.Error(err.Error())
+		log.GetLogInstance().Error(err.Error())
 		return false, err
 	}
 	return true, nil
@@ -67,11 +67,11 @@ func (req *Request) ParseRequest(context *gin.Context)(bool, error){
 
 //将body解析为json字符串
 func (req *Request) BodyToJsonString() string {
-	log.Logger.Debug("BodyToJsonString", zap.Any("body", req.Body))
+	log.GetLogInstance().Debug("BodyToJsonString", log.Data("body", req.Body))
 	if req.Body != nil {
 		data, err := json.Marshal(req.Body)
 		if err != nil {
-			log.Logger.Fatal(err.Error())
+			log.GetLogInstance().Fatal(err.Error())
 			return "{}"
 		}
 		return string(data)
@@ -82,10 +82,7 @@ func (req *Request) BodyToJsonString() string {
 //校验报文
 func (req *Request) Verify() bool {
 	body := req.Body.(map[string]interface{})
-	log.Logger.Info("verify", zap.Any("head", req.Head), zap.Any("body", body))
-
-
-
+	log.GetLogInstance().Info("verify", log.Data("head", req.Head), log.Data("body", body))
 
 	//t := reflect.TypeOf(req.Body)
 	//log.Logger.Debug("verify-type", zap.Any("type", t))

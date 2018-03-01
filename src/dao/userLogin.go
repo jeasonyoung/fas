@@ -8,6 +8,7 @@ import (
 	"github.com/satori/go.uuid"
 
 	"fas/src/log"
+	db "fas/src/database"
 )
 
 //用户登录流水
@@ -27,19 +28,19 @@ type UserLogin struct {
 
 //检查ID是否存在
 func (u *UserLogin) hasById(id string)(bool, error){
-	log.Logger.Debug("hasById", zap.String("id", id))
+	log.GetLogInstance().Debug("hasById", log.Data("id", id))
 	if len(id) == 0 {
-		log.Logger.Fatal("id is empty")
+		log.GetLogInstance().Fatal("id is empty")
 		return false, errors.New("id is empty")
 	}
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	var ret bool
-	err := SqlDb.QueryRow("select count(0) > 0 from tbl_fas_user_logins where id=?", id).Scan(&ret)
+	err := db.SqlDb.QueryRow("select count(0) > 0 from tbl_fas_user_logins where id=?", id).Scan(&ret)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return ret, nil
@@ -47,19 +48,19 @@ func (u *UserLogin) hasById(id string)(bool, error){
 
 //根据令牌加载数据
 func (u *UserLogin) loadByToken(token string)(bool, error){
-	log.Logger.Debug("loadByToken", zap.String("token", token))
+	log.GetLogInstance().Debug("loadByToken", log.Data("token", token))
 	if len(token) == 0 {
-		log.Logger.Fatal("token is empty")
+		log.GetLogInstance().Fatal("token is empty")
 		return false, errors.New("token is empty")
 	}
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
-	err := SqlDb.QueryRow("select id,userId,channelId,method,token,ipAddr,mac,expiredTime,status from tbl_fas_user_logins where token=?", token).Scan(
+	err := db.SqlDb.QueryRow("select id,userId,channelId,method,token,ipAddr,mac,expiredTime,status from tbl_fas_user_logins where token=?", token).Scan(
 		u.Id, u.UserId, u.ChannelId, u.Method, u.Token, u.IpAddr, u.Mac, u.ExpiredTime, u.Status)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return true, nil
@@ -67,9 +68,9 @@ func (u *UserLogin) loadByToken(token string)(bool, error){
 
 //新增或更新
 func (u *UserLogin) SaveOrUpdate() (bool, error){
-	log.Logger.Debug("saveOrUpdate")
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	log.GetLogInstance().Debug("saveOrUpdate")
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	if len(u.Id) == 0 {
@@ -77,23 +78,23 @@ func (u *UserLogin) SaveOrUpdate() (bool, error){
 	}
 	ret,err := u.hasById(u.Id)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	if !ret {//新增
-		_, err := SqlDb.Exec("insert into tbl_fas_user_logins(id,userId,channelId,method,token,ipAddr,mac,expiredTime,status) values(?,?,?,?,?,?,?,?,?)",
+		_, err := db.SqlDb.Exec("insert into tbl_fas_user_logins(id,userId,channelId,method,token,ipAddr,mac,expiredTime,status) values(?,?,?,?,?,?,?,?,?)",
 			u.Id, u.UserId, u.ChannelId, u.Method, u.Token, u.IpAddr, u.Mac, u.ExpiredTime, u.Status)
 		if err != nil {
-			log.Logger.Fatal(err.Error())
+			log.GetLogInstance().Fatal(err.Error())
 			return false, err
 		}
 		return true, nil
 	}
 	//更新
-	_, err = SqlDb.Exec("update tbl_fas_user_logins set userId=?,channelId=?,method=?,token=?,ipAddr=?,mac=?,expiredTime=?,status=? where id=?",
+	_, err = db.SqlDb.Exec("update tbl_fas_user_logins set userId=?,channelId=?,method=?,token=?,ipAddr=?,mac=?,expiredTime=?,status=? where id=?",
 		u.UserId, u.ChannelId, u.Method, u.Token, u.IpAddr, u.Mac, u.ExpiredTime, u.Status, u.Id)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return true, nil
@@ -101,13 +102,13 @@ func (u *UserLogin) SaveOrUpdate() (bool, error){
 
 //更新状态
 func (u *UserLogin) updateStatus(token string,status bool)(bool, error){
-	log.Logger.Debug("updateStatus", zap.String("token", token), zap.Bool("status", status))
+	log.GetLogInstance().Debug("updateStatus", log.Data("token", token), log.Data("status", status))
 	if len(token) == 0 {
-		log.Logger.Fatal("token is empty")
+		log.GetLogInstance().Fatal("token is empty")
 		return false, errors.New("token is empty")
 	}
-	if SqlDb != nil {
-		log.Logger.Fatal("sql db is null")
+	if db.SqlDb != nil {
+		log.GetLogInstance().Fatal("sql db is null")
 		return false, errors.New("sql db is null")
 	}
 	//
@@ -116,9 +117,9 @@ func (u *UserLogin) updateStatus(token string,status bool)(bool, error){
 		s = 1
 	}
 	//
-	_, err := SqlDb.Exec("update tbl_fas_user_logins set status=? where token=?", s, token)
+	_, err := db.SqlDb.Exec("update tbl_fas_user_logins set status=? where token=?", s, token)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		return false, err
 	}
 	return true, nil

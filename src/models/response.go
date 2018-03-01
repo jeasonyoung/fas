@@ -5,8 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"go.uber.org/zap"
-
 	"fas/src/log"
 )
 
@@ -71,10 +69,10 @@ func (resp *Response) GetRespCodeText() string{
 
 //检查请求参数
 func (resp *Response) CheckReqParam(context *gin.Context, param string, err string, callback func(param string)(bool,error)) bool {
-	log.Logger.Debug("checkReqParam", zap.String("param", param), zap.String("err", err))
+	log.GetLogInstance().Debug("checkReqParam", log.Data("param", param), log.Data("err", err))
 	//检查字段是否为空
 	if len(param) == 0 {
-		log.Logger.Fatal(err)
+		log.GetLogInstance().Fatal(err)
 		resp.InitHead(RespCodeParamIsEmpty, err)
 		resp.ResponseJson(context)
 		return false
@@ -83,7 +81,7 @@ func (resp *Response) CheckReqParam(context *gin.Context, param string, err stri
 	if callback != nil {
 		//回调处理
 		if ok, err := callback(param); !ok {
-			log.Logger.Fatal(err.Error())
+			log.GetLogInstance().Fatal(err.Error())
 			resp.InitHead(RespCodeDataValidError, err.Error())
 			resp.ResponseJson(context)
 			return false
@@ -94,18 +92,17 @@ func (resp *Response) CheckReqParam(context *gin.Context, param string, err stri
 
 //解析报文失败响应输出
 func (resp *Response) ResponseParseRequestFail(c *gin.Context, err error) {
-	log.Logger.Debug("responseParseRequestFail", zap.String("err", err.Error()))
+	log.GetLogInstance().Debug("responseParseRequestFail", log.Data("err", err.Error()))
 	resp.InitHead(RespCodeParseRequestFail, err.Error())
 	resp.ResponseJson(c)
 }
 
 //输出JSON格式响应
 func (resp *Response) ResponseJson(c *gin.Context){
-	log.Logger.Debug("responseWrite")
+	log.GetLogInstance().Debug("responseWrite")
 	if c == nil {
-		log.Logger.Fatal("context is nil")
+		log.GetLogInstance().Fatal("context is nil")
 		return
 	}
 	c.JSON(http.StatusOK, resp)
 }
-

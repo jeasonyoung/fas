@@ -6,8 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"go.uber.org/zap"
-
 	"fas/src/log"
 	"fas/src/common"
 )
@@ -21,14 +19,14 @@ type SignInBody struct {
 //解析登录报文体
 func (body *SignInBody) ParseBody(context *gin.Context) (bool,error){
 	dataJson := context.MustGet(common.ReqBodyJsonString).(string)
-	log.Logger.Debug("parseBody", zap.String(common.ReqBodyJsonString, dataJson))
+	log.GetLogInstance().Debug("parseBody", log.Data(common.ReqBodyJsonString, dataJson))
 	if len(dataJson) == 0 {
 		return false, errors.New("json is empty")
 	}
 	//JSON解析
 	err := json.Unmarshal([]byte(dataJson), body)
 	if err != nil {
-		log.Logger.Error(err.Error())
+		log.GetLogInstance().Error(err.Error())
 		return false, err
 	}
 	return true, nil

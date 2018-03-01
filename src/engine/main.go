@@ -6,8 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"fas/src/conf"
-	"fas/src/log"
-	"fas/src/dao"
 
 	"fas/src/apis"
 )
@@ -29,10 +27,6 @@ func init() {
 
 //执行入口
 func Run(cfg *conf.Config){
-	log.Logger.Info("初始化连接数据库...")
-	//初始化链接数据库
-	dao.InitDatabase(cfg)
-
 	//版本v1
 	v1 := AppEngine.Group("api/v1")
 	{
@@ -53,7 +47,6 @@ func Run(cfg *conf.Config){
 			//
 		}
 	}
-
 
 	//
 	AppEngine.GET("/", func(c *gin.Context) {

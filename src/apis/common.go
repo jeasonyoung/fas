@@ -5,19 +5,16 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-
 	"github.com/satori/go.uuid"
-
-	"go.uber.org/zap"
 
 	"fas/src/common"
 
 	"fas/src/log"
 	"fas/src/models"
 
-	"fas/src/database"
 	"fas/src/utils"
 
+	"fas/src/dao"
 )
 
 //公用结构体
@@ -35,7 +32,7 @@ func (c *Common) InitToken(token common.ITokenConf){
 
 //用户注册
 func (c *Common) Register(context *gin.Context) {
-	log.Logger.Debug("register")
+	log.GetLogInstance().Debug("register")
 	//初始化响应报文
 	resp := &models.Response{}
 	//初始化用户注册报文体
@@ -43,7 +40,7 @@ func (c *Common) Register(context *gin.Context) {
 	//解析报文体
 	_, err := body.ParseBody(context)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		resp.ResponseParseRequestFail(context, err)
 		return
 	}
@@ -57,7 +54,7 @@ func (c *Common) Register(context *gin.Context) {
 	if !resp.CheckReqParam(context, body.Account, "账号为空", func(param string) (bool, error) {
 		//检查账号是否已存在
 		if user.HasByAccount(body.Account) {
-			log.Logger.Fatal("account is exists")
+			log.GetLogInstance().Fatal("account is exists")
 			return false, errors.New("账号已存在")
 		}
 		return true, nil
@@ -68,7 +65,7 @@ func (c *Common) Register(context *gin.Context) {
 	if !resp.CheckReqParam(context, body.Mobile, "手机号码为空", func(param string) (bool, error) {
 		//检查手机号码是否已存在
 		if user.HasByMobile(body.Mobile) {
-			log.Logger.Fatal("mobile is exists")
+			log.GetLogInstance().Fatal("mobile is exists")
 			return false, errors.New("手机号码已注册")
 		}
 		return true,nil
@@ -87,7 +84,7 @@ func (c *Common) Register(context *gin.Context) {
 	//保存数据
 	ret,err := user.SaveOrUpdate()
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		resp.InitHead(models.RespCodeDataStoreError, err.Error())
 	}else {
 		retCode := models.RespCodeSuccess
@@ -96,7 +93,7 @@ func (c *Common) Register(context *gin.Context) {
 			retCode = models.RespCodeDataStoreError
 			info = "保存数据失败"
 		}
-		log.Logger.Info("register-result:", zap.Int("retCode", retCode))
+		log.GetLogInstance().Info("register-result:", log.Data("retCode", retCode))
 		resp.InitHead(int(retCode), info)
 	}
 	resp.ResponseJson(context)
@@ -104,7 +101,7 @@ func (c *Common) Register(context *gin.Context) {
 
 //用户登录
 func (c *Common) SignIn(context *gin.Context) {
-	log.Logger.Debug("signIn...")
+	log.GetLogInstance().Debug("signIn...")
 	//初始化响应报文
 	resp := &models.Response{}
 	//初始化用户登录报文体
@@ -112,7 +109,7 @@ func (c *Common) SignIn(context *gin.Context) {
 	//解析请求报文体
 	_, err := body.ParseBody(context)
 	if err != nil {
-		log.Logger.Fatal(err.Error())
+		log.GetLogInstance().Fatal(err.Error())
 		resp.ResponseParseRequestFail(context, err)
 		return
 	}
@@ -129,13 +126,13 @@ func (c *Common) SignIn(context *gin.Context) {
 	//通过账号加载用户数据
 	_, err = user.LoadByAccount(body.Account)
 	if err != nil {
-		log.Logger.Fatal("账号不存在")
+		log.GetLogInstance().Fatal("账号不存在")
 		resp.InitHead(models.RespCodeAccountNotExist, "账号不存在")
 		resp.ResponseJson(context)
 		return
 	}
 	//检查密码是否错误
-	log.Logger.Debug("input passwd:", zap.String("account", body.Account), zap.String("password", body.Password))
+	log.GetLogInstance().Debug("input passwd:", log.Data("account", body.Account), log.Data("password", body.Password))
 	encryptPasswd := utils.MD5Sum(body.Password)
 	//对比密码
 	if strings.ToLower(encryptPasswd) == strings.ToLower(user.Password) {
@@ -171,7 +168,7 @@ func (c *Common) SignIn(context *gin.Context) {
 		//令牌保存
 		_, err = userLogin.SaveOrUpdate()
 		if err != nil {
-			log.Logger.Fatal(err.Error())
+			log.GetLogInstance().Fatal(err.Error())
 			resp.InitHead(models.RespCodeSignInFail, err.Error())
 			resp.ResponseJson(context)
 			return

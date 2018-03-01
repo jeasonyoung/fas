@@ -3,8 +3,6 @@ package engine
 import (
 	"github.com/gin-gonic/gin"
 
-	"go.uber.org/zap"
-
 	"fas/src/log"
 	"fas/src/models"
 	"fas/src/common"
@@ -18,7 +16,7 @@ func ParseRequestMiddleWare() gin.HandlerFunc {
 		//解析数据
 		ret, err := req.ParseRequest(context)
 		if !ret || err != nil {
-			log.Logger.Error("解析请求报文失败:", zap.String("err", err.Error()))
+			log.GetLogInstance().Error("解析请求报文失败:", log.Data("err", err.Error()))
 			//初始化响应输出报文
 			resp := &models.Response{}
 			resp.InitHead(models.RespCodeParseRequestFail, "解析请求报文失败:" + err.Error())
@@ -28,10 +26,10 @@ func ParseRequestMiddleWare() gin.HandlerFunc {
 			return
 		}
 		//
-		log.Logger.Debug("request-json:", zap.Bool("result", ret), zap.Any("data", req))
+		log.GetLogInstance().Debug("request-json:", log.Data("result", ret), log.Data("data", req))
 		//验证报文
 		if !req.Verify() {
-			log.Logger.Error("校验请求报文失败")
+			log.GetLogInstance().Error("校验请求报文失败")
 			//初始化响应输出报文
 			resp := &models.Response{}
 			resp.InitHead(models.RespCodeVerifyRequestFail, "校验请求报文失败")
