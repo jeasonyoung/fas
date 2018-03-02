@@ -9,7 +9,7 @@
   "db":{
     "type":"mysql",
     "server":"192.168.99.100",
-    "port":32772,
+    "port":32768,
     "name":"fas",
     "user":"root",
     "pwd":"root",

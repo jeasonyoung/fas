@@ -131,32 +131,56 @@ func (l *Log) Error(msg string, data ...DataLog) {
 
 //writeLog
 func (l *Log) writeLog(t logType, msg string, data []DataLog){
-	count := len(data)
-	var fields = make([]zapcore.Field, count)
+	if l.logger == nil {
+		return
+	}
+	//fmt.Printf("writeLog(logType:%v,msg:%v,data:%v)...\n", t, msg, data)
 	//
+	count := len(data)
+	fields := make([]zapcore.Field, count)
 	if count > 0 {
-		for i := 0; i < count; i++ {
-			d := data[i]
-			f := zap.Any(d.Key, d.Value)
-			fields = append(fields, f)
+		for idx, d := range data {
+			fmt.Printf("writeLog[%v]:%v\n", idx, d)
+			fields[idx] = zap.Any(d.Key, d.Value)
 		}
 	}
+	//fmt.Printf("writeLog-fields[%v]:%v\n", count, fields[:])
 	//
 	switch t {
 		case logTypeDebug: {//debug
-			l.logger.Debug(msg, fields...)
+			if count > 0 {
+				l.logger.Debug(msg, fields[:]...)
+				return
+			}
+			l.logger.Debug(msg)
 		}
 		case logTypeInfo: {//info
-			l.logger.Info(msg, fields...)
+			if count > 0 {
+				l.logger.Info(msg, fields[:]...)
+				return
+			}
+			l.logger.Info(msg)
 		}
 		case logTypeWarn: {//warn
-			l.logger.Warn(msg, fields...)
+			if count > 0 {
+				l.logger.Warn(msg, fields[:]...)
+				return
+			}
+			l.logger.Warn(msg)
 		}
 		case logTypeFatal: {//fatal
-			l.logger.Fatal(msg, fields...)
+			if count > 0 {
+				l.logger.Fatal(msg, fields[:]...)
+				return
+			}
+			l.logger.Fatal(msg)
 		}
 		case logTypeError: {//error
-			l.logger.Error(msg, fields...)
+			if count > 0 {
+				l.logger.Error(msg, fields[:]...)
+				return
+			}
+			l.logger.Error(msg)
 		}
 	}
 }
