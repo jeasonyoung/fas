@@ -3,8 +3,6 @@ package dao
 import (
 	"errors"
 
-	"go.uber.org/zap"
-
 	"github.com/satori/go.uuid"
 
 	"fas/src/log"

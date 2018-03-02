@@ -5,8 +5,6 @@ import (
 
 	"github.com/satori/go.uuid"
 
-	"go.uber.org/zap"
-
 	"fas/src/log"
 	db "fas/src/database"
 )

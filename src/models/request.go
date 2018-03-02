@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 
 	"fas/src/log"
 	"fas/src/common"

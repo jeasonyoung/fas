@@ -3,8 +3,6 @@ package dao
 import (
 	"errors"
 
-	"go.uber.org/zap"
-
 	"fas/src/log"
 	db "fas/src/database"
 )
