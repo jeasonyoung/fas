@@ -60,4 +60,3 @@ func (req *Request) Verify() bool {
 	return true
 }
 
-//

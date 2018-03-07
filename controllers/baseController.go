@@ -28,7 +28,7 @@ func (bc *baseController) Prepare() {
 }
 
 //获取请求报文数据
-func (bc *baseController) GetRequestData() *net.Request {
+func (bc *baseController) GetReqData() *net.Request {
 	return bc.req
 }
 
@@ -72,4 +72,25 @@ func (bc *baseController) ResponseJsonWithDataStoreError(err error) {
 		resp.SetHeadMessage(err.Error())
 	}
 	bc.ResponseJson(resp)
+}
+
+//请求报文体处理
+func (bc *baseController) ReqBodyHandler(body net.ReqBodyHandler) {
+	//检查请求报文体
+	if body != nil {
+		//校验请求数据
+		err := body.Valid()
+		if err != nil {
+			bc.ResponseJsonWithDataValidError(err)
+			return
+		}
+		//保存数据
+		err = body.Save()
+		if err != nil {
+			bc.ResponseJsonWithDataStoreError(err)
+			return
+		}
+	}
+	//成功
+	bc.ResponseJsonWithSuccess()
 }

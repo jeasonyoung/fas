@@ -16,7 +16,7 @@ type RegisterController struct {
 
 //POST 请求
 func (rc *RegisterController) Post() {
-	req := rc.GetRequestData()
+	req := rc.GetReqData()
 	logs.Debug("Post-req:%v", req)
 	//初始化请求报文体
 	reqBody := &ReqRegisterBody{}
@@ -26,20 +26,8 @@ func (rc *RegisterController) Post() {
 		rc.ResponseJsonWithParseRequestBodyFail(err)
 		return
 	}
-	//校验请求数据
-	err = reqBody.valid()
-	if err != nil {
-		rc.ResponseJsonWithDataValidError(err)
-		return
-	}
-	//保存数据
-	err = reqBody.save()
-	if err != nil {
-		rc.ResponseJsonWithDataStoreError(err)
-		return
-	}
-	//成功
-	rc.ResponseJsonWithSuccess()
+	//请求报文处理
+	rc.ReqBodyHandler(reqBody)
 }
 
 //注册用户-请求报文体
@@ -50,7 +38,7 @@ type ReqRegisterBody struct {
 }
 
 //校验数据
-func (body *ReqRegisterBody) valid() error {
+func (body *ReqRegisterBody) Valid() error {
 	//检查账号
 	if len(body.Account) == 0 {
 		return errors.New("账号为空")
@@ -67,7 +55,7 @@ func (body *ReqRegisterBody) valid() error {
 }
 
 //保存数据
-func (body *ReqRegisterBody) save() error {
+func (body *ReqRegisterBody) Save() error {
 	//初始化用户
 	user := &models.User{
 		Account:body.Account,//账号

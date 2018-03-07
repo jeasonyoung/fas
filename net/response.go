@@ -71,3 +71,16 @@ func NewResponse(code RespCode) *Response {
 func NewResponseSuccess() *Response{
 	return NewResponse(RespCodeSuccess)
 }
+
+//初始化响应消息
+func NewResponseSuccessWithBody(body interface{}) *Response{
+	//初始化成功响应报文
+	resp := NewResponseSuccess()
+	if body == nil {
+		return resp
+	}
+	//设置响应报文体
+	resp.Body = body
+	//返回
+	return resp
+}
