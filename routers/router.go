@@ -10,20 +10,20 @@ package routers
 import (
 	"github.com/astaxie/beego"
 
-	//"fas/controllers"
+	"fas/controllers"
 )
 
 func init() {
 	//路由
 	ns := beego.NewNamespace("/v1",
-		beego.NSNamespace("/object",
+		beego.NSNamespace("/register",
 			beego.NSInclude(
-				//&controllers.ObjectController{},
+				&controllers.RegisterController{},
 			),
 		),
-		beego.NSNamespace("/user",
+		beego.NSNamespace("/sign",
 			beego.NSInclude(
-				//&controllers.UserController{},
+				&controllers.AuthenController{},
 			),
 		),
 	)

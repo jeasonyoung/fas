@@ -40,6 +40,11 @@ type User struct {
 	Status uint8 `orm:"column(status)"`//状态(1:启用,0:停用)
 }
 
+//表名
+func (u *User) TableName() string {
+	return "tbl_fas_users"
+}
+
 //用户注册
 func (u *User) Register() error {
 	//检查用户账号是否存在
@@ -105,10 +110,19 @@ func (u *User) Sign(account,passwd,channelId,ip,mac string, method SignMethod) (
 	return login.Token, nil
 }
 
-
-//表名
-func (u *User) TableName() string {
-	return "tbl_fas_users"
+//根据ID加载数据
+func (u *User) LoadById(id string) bool {
+	if len(id) == 0 {
+		return false
+	}
+	o := orm.NewOrm()
+	qs := o.QueryTable(u)
+	err := qs.Filter("id", id).One(u)
+	if err != nil {
+		logs.Debug("LoadById(id:%v)-exp:%v", id, err.Error())
+		return false
+	}
+	return true
 }
 
 
@@ -131,6 +145,22 @@ type UserLogin struct {
 func (ul *UserLogin) TableName() string {
 	return "tbl_fas_user_logins"
 }
+
+//根据令牌加载数据
+func (ul *UserLogin) LoadByToken(token string) bool {
+	if len(token) == 0 {
+		return false
+	}
+	o := orm.NewOrm()
+	qs := o.QueryTable(ul)
+	err := qs.Filter("token", token).One(ul)
+	if err != nil {
+		logs.Debug("LoadByToken(token:%v)-exp:%v", token, err.Error())
+		return false
+	}
+	return ul.Status == uint8(StatusEnable)
+}
+
 
 //用户登录流水历史
 type UserLoginHistory struct {
