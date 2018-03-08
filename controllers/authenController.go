@@ -1,9 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"errors"
+
 	"github.com/astaxie/beego/logs"
+
 	"fas/net"
+	"fas/models"
 )
 
 //认证控制器
@@ -29,6 +33,10 @@ func (ac *AuthenController) Post(){
 		ac.ResponseJsonWithDataValidError(err)
 		return
 	}
+	//设置渠道
+	reqBody.channelId = fmt.Sprintf("%v", req.Head.Channel)
+	//设置IP地址
+	reqBody.ipAddr = ac.Ctx.Request.RemoteAddr
 	//数据保存处理
 	var respBody *RespAuthenBody
 	respBody,err = reqBody.Save()
@@ -45,6 +53,8 @@ type ReqAuthenBody struct {
 	Account   string `json:"account"`//账号
 	Password  string `json:"password"`//密码
 	Mac       string `json:"mac"`//设备标识
+	channelId string //渠道ID
+	ipAddr    string //IP地址
 }
 
 //校验数据
@@ -61,10 +71,21 @@ func (body *ReqAuthenBody) Valid() error {
 }
 
 //保存数据
-func (body *ReqAuthenBody) Save() (*RespAuthenBody,error) {
-	///TODO:登录处理
-
-	return nil,nil
+func (body *ReqAuthenBody) Save() (*RespAuthenBody, error) {
+	u := &models.User{}
+	//登录数据处理
+	token, err := u.Sign(body.Account, body.Password, body.channelId, body.ipAddr, body.Mac, models.SignMethodWithLocal)
+	if err != nil {
+		return nil, err
+	}
+	//登录成功数据处理
+	return &RespAuthenBody{
+		Token:token,//登录令牌
+		Info:RespUserInfo{
+			NickName:u.NickName,//用户昵称
+			IconURL:u.IconURL,//头像URL
+		},
+	},nil
 }
 
 //用户验证-响应报文体

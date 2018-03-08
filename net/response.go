@@ -14,9 +14,9 @@ const (
 	RespCodeParamIsEmpty RespCode = 200//请求参数为空
 	RespCodeDataValidError RespCode = 300//数据验证错误
 	RespCodeDataStoreError RespCode = 310//数据存储错误
-	RespCodeAccountNotExist RespCode = 400//账号不存在
-	RespCodePasswordError RespCode = 410//密码错误
-	RespCodeSignInFail RespCode = 420//登录失败
+	RespCodeSignInFail RespCode = 400//登录失败
+	RespCodeAccountNotExist RespCode = 410//账号不存在
+	RespCodePasswordError RespCode = 420//密码错误
 )
 
 //响应状态码文本
