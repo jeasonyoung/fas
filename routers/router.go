@@ -15,15 +15,16 @@ import (
 
 func init() {
 	//路由
-	ns := beego.NewNamespace("/v1",
-		beego.NSNamespace("/register",
-			beego.NSInclude(
-				&controllers.RegisterController{},
-			),
-		),
-		beego.NSNamespace("/sign",
-			beego.NSInclude(
-				&controllers.AuthenController{},
+	ns := beego.NewNamespace("/api",
+		beego.NSNamespace("/v1",
+			//用户注册
+			beego.NSRouter("/register", &controllers.RegisterController{}),
+			//用户登录
+			beego.NSRouter("/sign", &controllers.AuthenController{}),
+			//加载账本
+			beego.NSNamespace("/account",
+				//用户
+				beego.NSRouter("/all", &controllers.AccountController{},"post:LoadAllByUser"),
 			),
 		),
 	)

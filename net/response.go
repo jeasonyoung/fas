@@ -73,7 +73,7 @@ func NewResponseSuccess() *Response{
 }
 
 //初始化响应消息
-func NewResponseSuccessWithBody(body interface{}) *Response{
+func NewResponseSuccessWithBody(body interface{}) *Response {
 	//初始化成功响应报文
 	resp := NewResponseSuccess()
 	if body == nil {
@@ -83,4 +83,9 @@ func NewResponseSuccessWithBody(body interface{}) *Response{
 	resp.Body = body
 	//返回
 	return resp
+}
+
+//初始化查询结果响应报文
+func NewResponseWithQueryResut(total uint, rows interface{}) *Response {
+	return NewResponseSuccessWithBody(NewRespQueryResultBase(total, rows))
 }

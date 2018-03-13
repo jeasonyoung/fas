@@ -1,9 +1,44 @@
 package models
 
 import (
-	"github.com/astaxie/beego/orm"
 	"time"
+	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/logs"
 )
+
+type AccountType uint8//账本类型
+type AccountStatus uint8//账本状态
+type AccountRole uint8//账本角色
+
+const (
+	AccountTypeWithAll AccountType = iota//全部账本
+	AccountTypeWithPrivate//私人账本
+	AccountTypeWithRead//只读账本
+	AccountTypeWithPublic//公共账本
+)
+
+const (
+	AccountStatusWithDisable AccountStatus = iota//封账
+	AccountStatusWithEnable//启用
+	AccountStatusWithDelete//删除
+)
+
+const (
+	AccountRoleWithOwner AccountRole = iota//所有者
+	AccountRoleWithVisitor //参与者
+)
+
+//账本信息
+type AccountInfo struct {
+	Id string//账本ID
+	Code uint8//账本代码
+	Name string//账本名称
+	Abbr string//账本简称
+	Type uint8//账本类型
+	Status uint8//账本状态
+	Role uint8//账本角色
+}
+
 
 //账本
 type Account struct {
@@ -22,6 +57,30 @@ type Account struct {
 //账本-表名
 func (a *Account) TableName() string {
 	return "tbl_fas_accounts"
+}
+
+//查询账本数据
+func (a *Account) QueryAccounts(userId string,tp,status uint8, index, rows uint)(uint, *[]AccountInfo){
+	logs.Debug("QueryAccounts(userId:%v,type:%v,status:%v,index:%v,rows:%v)...", userId, tp, status, index, rows)
+	//初始化查询
+	o := orm.NewOrm()
+	//查询总数据量
+	var totals uint
+	err := o.Raw("select count(0) from vw_fas_accounts where userId = ? and type = ? and status = ?", userId, tp, status).QueryRow(&totals)
+	if err != nil {
+		logs.Warn("QueryAccounts(userId:%v,type:%v,status:%v):%v", userId, tp, status,err.Error())
+		return 0, nil
+	}
+	//
+	start := (index - 1) * rows
+	var items []AccountInfo
+	_, err = o.Raw("select id,code,name,abbr,type,status,role from vw_fas_accounts where userId = ? and type = ? and status = ? limit ?,?",
+		userId, tp, status, start, rows).QueryRows(&items)
+	if err != nil {
+		logs.Warn("QueryAccounts(userId:%v,type:%v,status:%v):%v", userId, tp, status,err.Error())
+		return 0, nil
+	}
+	return totals, &items
 }
 
 

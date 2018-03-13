@@ -52,6 +52,23 @@ func (req *Request) ToBodyTarget(target interface{}) error {
 	return nil
 }
 
+//解析为分页查询报文体
+func (req *Request) ToQueryBodyTarget(target *ReqQueryBase) error {
+	if req.Body != nil && target != nil {
+		//将body对象json
+		data, err := json.Marshal(req.Body)
+		if err != nil {
+			logs.Debug("ToQueryBodyTarget[%v]-exp:%v", req.Body, err.Error())
+			return err
+		}
+		//json解析
+		if len(data) > 0 {
+			return json.Unmarshal(data, target)
+		}
+	}
+	return nil
+}
+
 //校验报文
 func (req *Request) Verify() bool {
 	//body := req.Body.(map[string]interface{})
